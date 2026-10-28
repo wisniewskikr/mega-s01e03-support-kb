@@ -4,7 +4,7 @@ title: '#4471 · three problems, not one'
 owner: support desk
 status: open
 reviewed: 2026-10-28
-signature: wisniewskikr
+signature: 'v1.eyJzdWIiOiI0MDIzIiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMyMDcxNDEsImV4cCI6MTc5MzI5MzU0MX0.YyUGojsQCgy-eXhidxHspQQIjECgfeA2vFh60cHHkKI'
 ---
 
 <script>
