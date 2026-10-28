@@ -1,0 +1,65 @@
+---
+layout: runbook
+title: '#4471 · three problems, not one'
+owner: support desk
+status: open
+reviewed: 2026-10-28
+signature: wisniewskikr
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const REPO = 'https://github.com/wisniewskikr/mega-s01e03-support-kb/issues';
+  const tickets = { parser: `${REPO}/1`, hint: `${REPO}/2`, shift: `${REPO}/3` };
+</script>
+
+[#4471](/kb/incidents/4471) is marked known: one issue, one fix queued. Its own table says
+otherwise. The reports in it come from three different problems, and the queued parser fix
+closes only one of them.
+
+<Callout kind="warn">
+Not one issue. Three problems, each with its own ticket. Fixing the parser leaves the other two open.
+</Callout>
+
+## The problems
+
+<ProblemTable ticket={4471} {tickets} />
+
+### `parser`: the shared parser reads dates month first
+
+Every tenant on file writes the day first. The shared parser reads month first, so day and
+month swap: 7 April goes out as 4 July. Reports come in by app, email and form, from all
+eleven tenants. This is the bug the queued fix is for.
+
+### `hint`: booking-v3's date hint says `MM/DD/YYYY`
+
+Tenants on `booking-v3` print `MM/DD/YYYY` under the date field. Their people type what the
+hint says, month first, and the form reads the date the tenant's way, day first. Only reports
+that came in through the form of a `booking-v3` tenant belong here. The parser fix does not
+touch the form or its hint, so these reports keep coming after it ships.
+
+### `shift`: the date moves by one day
+
+Some reports are not a swap at all. The date is one day off: Tuesday 12 May shows as Monday
+11 May, a meeting lands on Tuesday in Lisbon and Monday in Toronto, every booking in June is
+one day off, an invite arrives before the booking was made. The desk noted these as one-day
+moves (`desk-notes.json`), and `causes.ts` still files them under `parser` by tenant. A
+one-day move looks like a time-zone or daylight-saving bug, not a date-order bug.
+
+## How the counts are made
+
+- One id, one report: the export repeats some reports, and they are counted once.
+- `shift` is every report the desk noted as a one-day move.
+- `hint` and `parser` come from `causes.ts`: the tenant's locale and booking form, and the
+  channel the report came in by. What intake tagged a report as does not count.
+
+## Lessons
+
+- Merging by subject line put three problems into one ticket. Read the bodies before you call
+  a ticket known.
+- A note that a report reads differently is a sign it may be its own problem.
+
+<RenderStamp {signature} />
