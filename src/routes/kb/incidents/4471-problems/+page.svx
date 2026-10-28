@@ -14,32 +14,35 @@ signature: wisniewskikr
 
   const REPO = 'https://github.com/wisniewskikr/mega-s01e03-support-kb/issues';
   const tickets = { parser: `${REPO}/1`, hint: `${REPO}/2`, shift: `${REPO}/3` };
+  const outcome = { parser: 'fixed', hint: "won't fix" };
 </script>
 
-[#4471](/kb/incidents/4471) is marked known: one issue, one fix queued. Its own table says
-otherwise. The reports in it come from three different problems, and the queued parser fix
-closes only one of them.
+[#4471](/kb/incidents/4471) was marked known: one issue, one fix queued. Its own table said
+otherwise. The reports in it come from three different problems. Engineering closed #4471 on
+5 October: the parser is fixed (`fix(dates): parse dd/mm for eu locales`) and the hint is
+won't fix, because the `booking-v3` form is retired. Nothing in that update covers the
+one-day moves.
 
 <Callout kind="warn">
-Not one issue. Three problems, each with its own ticket. Fixing the parser leaves the other two open.
+Not one issue. Three problems, each with its own ticket. #4471 is closed, but <code>shift</code> is still open.
 </Callout>
 
 ## The problems
 
-<ProblemTable ticket={4471} {tickets} />
+<ProblemTable ticket={4471} {tickets} {outcome} />
 
 ### `parser`: the shared parser reads dates month first
 
 Every tenant on file writes the day first. The shared parser reads month first, so day and
 month swap: 7 April goes out as 4 July. Reports come in by app, email and form, from all
-eleven tenants. This is the bug the queued fix is for.
+eleven tenants. Fixed: `fix(dates): parse dd/mm for eu locales`.
 
 ### `hint`: booking-v3's date hint says `MM/DD/YYYY`
 
 Tenants on `booking-v3` print `MM/DD/YYYY` under the date field. Their people type what the
 hint says, month first, and the form reads the date the tenant's way, day first. Only reports
 that came in through the form of a `booking-v3` tenant belong here. The parser fix does not
-touch the form or its hint, so these reports keep coming after it ships.
+touch the form or its hint. Won't fix: the `booking-v3` form is retired.
 
 ### `shift`: the date moves by one day
 
@@ -47,19 +50,23 @@ Some reports are not a swap at all. The date is one day off: Tuesday 12 May show
 11 May, a meeting lands on Tuesday in Lisbon and Monday in Toronto, every booking in June is
 one day off, an invite arrives before the booking was made. The desk noted these as one-day
 moves (`desk-notes.json`), and `causes.ts` still files them under `parser` by tenant. A
-one-day move looks like a time-zone or daylight-saving bug, not a date-order bug.
+one-day move looks like a time-zone or daylight-saving bug, not a date-order bug. The dd/mm
+parser fix does not touch it, so this ticket stays open.
 
 ## How the counts are made
 
 - One id, one report: the export repeats some reports, and they are counted once.
-- `shift` is every report the desk noted as a one-day move.
-- `hint` and `parser` come from `causes.ts`: the tenant's locale and booking form, and the
-  channel the report came in by. What intake tagged a report as does not count.
+- `hint` and `parser` are counted the way the desk counts them, from `causes.ts`: the tenant's
+  locale and booking form, and the channel the report came in by. What intake tagged a report as
+  does not count.
+- `shift` is every report the desk noted as a one-day move. They stay counted under `parser`,
+  where the desk files them, so the three counts add up to more than the total.
 
 ## Lessons
 
 - Merging by subject line put three problems into one ticket. Read the bodies before you call
   a ticket known.
 - A note that a report reads differently is a sign it may be its own problem.
+- Closing the merged ticket is not closing every problem in it. Check each one against what shipped.
 
 <RenderStamp {signature} />
